@@ -18,8 +18,8 @@ venv/
 .vscode/
 .idea/
 
-# Streamlit
-.streamlit/
+# Streamlit（secrets 不提交，但保留 config.toml 等）
+.streamlit/secrets.toml
 
 # 系统
 .DS_Store

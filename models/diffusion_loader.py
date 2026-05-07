@@ -1,5 +1,7 @@
 """Stable Diffusion 1.5 加载与推理。"""
+import os
 import torch
+import streamlit as st
 from utils.session_manager import get_device
 
 
@@ -7,11 +9,19 @@ def load_sd_pipeline():
     """加载 SD 1.5 pipeline（FP16, attention slicing for 8GB VRAM）。"""
     from diffusers import StableDiffusionPipeline
 
+    # 从 Streamlit Secrets 获取 HF Token（本地 .streamlit/secrets.toml 或 Cloud Dashboard）
+    hf_token = None
+    try:
+        hf_token = st.secrets.get("HF_TOKEN")
+    except Exception:
+        hf_token = os.environ.get("HF_TOKEN")
+
     device = get_device()
     pipe = StableDiffusionPipeline.from_pretrained(
         'runwayml/stable-diffusion-v1-5',
         torch_dtype=torch.float16 if device.type == 'cuda' else torch.float32,
         safety_checker=None,
+        token=hf_token,
     )
     if device.type == 'cuda':
         pipe.enable_attention_slicing()
