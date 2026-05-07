@@ -1,6 +1,6 @@
 """图像处理 Web 应用 — 主入口。
 
-运行: streamlit run image7/app.py
+运行: streamlit run image-processor-8/app.py
 """
 import streamlit as st
 
@@ -20,7 +20,7 @@ from utils.session_manager import clear_cuda_memory
 def main():
     st.title("🎨 图像处理实验室")
     st.markdown(
-        "自编码器 vs VAE 对比 · DCGAN 生成 · 文本到图像 — "
+        "自编码器 vs VAE 对比 · DCGAN 生成 · 文本到图像 · "
         "实时调参交互 · 前后效果对比"
     )
 
