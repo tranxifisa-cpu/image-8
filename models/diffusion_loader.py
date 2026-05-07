@@ -1,0 +1,39 @@
+"""Stable Diffusion 1.5 加载与推理。"""
+import torch
+from utils.session_manager import get_device
+
+
+def load_sd_pipeline():
+    """加载 SD 1.5 pipeline（FP16, attention slicing for 8GB VRAM）。"""
+    from diffusers import StableDiffusionPipeline
+
+    device = get_device()
+    pipe = StableDiffusionPipeline.from_pretrained(
+        'runwayml/stable-diffusion-v1-5',
+        torch_dtype=torch.float16 if device.type == 'cuda' else torch.float32,
+        safety_checker=None,
+    )
+    if device.type == 'cuda':
+        pipe.enable_attention_slicing()
+    pipe = pipe.to(device)
+    return pipe
+
+
+def generate_image(pipe, prompt: str, negative_prompt: str = "",
+                   num_inference_steps: int = 20, guidance_scale: float = 7.5,
+                   seed: int | None = None, width: int = 512, height: int = 512):
+    """使用 SD pipeline 生成图像。"""
+    generator = None
+    if seed is not None:
+        generator = torch.Generator(device=pipe.device).manual_seed(seed)
+
+    result = pipe(
+        prompt=prompt,
+        negative_prompt=negative_prompt if negative_prompt else None,
+        num_inference_steps=num_inference_steps,
+        guidance_scale=guidance_scale,
+        generator=generator,
+        width=width,
+        height=height,
+    )
+    return result.images[0]
