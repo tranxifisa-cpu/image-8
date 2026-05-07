@@ -42,6 +42,11 @@ def generate_image(pipe, prompt: str, negative_prompt: str = "",
     if seed is not None:
         generator = torch.Generator(device=pipe.device).manual_seed(seed)
 
+    # diffusers callback 传 3 个参数 (step_idx, t, latents)，适配包装
+    def _callback_wrapper(step_idx: int, _t, _latents):
+        if progress_callback:
+            progress_callback(step_idx, num_inference_steps)
+
     result = pipe(
         prompt=prompt,
         negative_prompt=negative_prompt if negative_prompt else None,
@@ -50,7 +55,7 @@ def generate_image(pipe, prompt: str, negative_prompt: str = "",
         generator=generator,
         width=width,
         height=height,
-        callback=progress_callback,
+        callback=_callback_wrapper,
         callback_steps=1,
     )
     return result.images[0]
