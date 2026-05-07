@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# 数据集（运行时自动下载）
+data/
+
+# 模型权重（运行时训练/下载）
+checkpoints/*.pt
+checkpoints/*.bin
+
+# 环境
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Streamlit
+.streamlit/
+
+# 系统
+.DS_Store
+Thumbs.db
