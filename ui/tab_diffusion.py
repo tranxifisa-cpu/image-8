@@ -65,6 +65,9 @@ def render_diffusion_tab() -> None:
         st.success("SD 1.5 模型已加载！")
 
     if not st.session_state.diffusion_loaded:
+        device = get_device()
+        if device.type == 'cpu':
+            st.warning("⚠️ 当前使用 CPU 推理，SD 1.5 生成会很慢（256px 约 2-3 分钟/张）。建议本地 GPU 运行。")
         auto_load = st.checkbox("自动加载模型（需约 4GB 显存，首次下载约 5GB）",
                                 key="diff_auto_load")
         if auto_load:
@@ -81,19 +84,28 @@ def render_diffusion_tab() -> None:
         if len(st.session_state.diffusion_runs) >= 4:
             st.warning("最多保存 4 组结果。请先清空后再生成。")
         else:
-            with st.spinner(f"生成中... (分辨率 {resolution}, {steps} 步)"):
-                t0 = time.time()
-                img = generate_image(
-                    st.session_state.diffusion_pipe,
-                    prompt=prompt,
-                    negative_prompt=neg_prompt,
-                    num_inference_steps=steps,
-                    guidance_scale=cfg,
-                    seed=seed if use_seed else None,
-                    width=resolution,
-                    height=resolution,
-                )
-                elapsed = time.time() - t0
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+
+            def progress_callback(step: int, total: int):
+                progress_bar.progress(step / total, text=f"扩散采样 {step}/{total} 步...")
+                status_text.text(f"正在去噪... {step}/{total}")
+
+            t0 = time.time()
+            img = generate_image(
+                st.session_state.diffusion_pipe,
+                prompt=prompt,
+                negative_prompt=neg_prompt,
+                num_inference_steps=steps,
+                guidance_scale=cfg,
+                seed=seed if use_seed else None,
+                width=resolution,
+                height=resolution,
+                progress_callback=progress_callback,
+            )
+            elapsed = time.time() - t0
+            progress_bar.empty()
+            status_text.empty()
 
             run = {
                 'params': {

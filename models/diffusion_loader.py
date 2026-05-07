@@ -31,8 +31,13 @@ def load_sd_pipeline():
 
 def generate_image(pipe, prompt: str, negative_prompt: str = "",
                    num_inference_steps: int = 20, guidance_scale: float = 7.5,
-                   seed: int | None = None, width: int = 512, height: int = 512):
-    """使用 SD pipeline 生成图像。"""
+                   seed: int | None = None, width: int = 512, height: int = 512,
+                   progress_callback=None):
+    """使用 SD pipeline 生成图像。
+
+    Args:
+        progress_callback: 可选，签名为 callback(step: int, total_steps: int)
+    """
     generator = None
     if seed is not None:
         generator = torch.Generator(device=pipe.device).manual_seed(seed)
@@ -45,5 +50,7 @@ def generate_image(pipe, prompt: str, negative_prompt: str = "",
         generator=generator,
         width=width,
         height=height,
+        callback=progress_callback,
+        callback_steps=1,
     )
     return result.images[0]
